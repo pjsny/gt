@@ -24,6 +24,10 @@ export type FileTranslationData = {
   };
 };
 
+export type EnqueueFilesResultWithCompletedKeys = EnqueueFilesResult & {
+  completedTranslationKeys?: Set<string>;
+};
+
 /**
  * Checks the status of translations and downloads them using a workflow pattern
  * @param fileVersionData - Mapping of file IDs to their version and name information
@@ -48,7 +52,7 @@ export async function runDownloadWorkflow({
   forceDownload,
 }: {
   fileVersionData: FileTranslationData;
-  jobData: EnqueueFilesResult | undefined;
+  jobData: EnqueueFilesResultWithCompletedKeys | undefined;
   branchData: BranchData | undefined;
   locales: string[];
   timeoutDuration: number;
@@ -98,6 +102,7 @@ export async function runDownloadWorkflow({
       jobData,
       timeoutDuration,
       forceRetranslation,
+      completedTranslationKeys: jobData.completedTranslationKeys,
     });
     await pollStep.wait();
 
@@ -159,6 +164,7 @@ export async function runDownloadWorkflow({
     fileTracker,
     resolveOutputPath,
     forceDownload,
+    skipTranslationCheck: !!jobData,
   });
   await downloadStep.wait();
 
